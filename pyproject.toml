@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "subgenix"
+version = "0.1.0"
+description = "Object oriented Python tool to generate subtitles from video files"
+authors = ["JMDOTS <contact@jmdots.com>", "Mark L. Dotson <mdotson888@gmail.com>"]
+packages = [{ include = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+loguru = "^0.5.3"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+black = "^22.3.0"
+flake8 = "^4.0.1"
+ruff = "^0.0.241"
+mypy = "^0.812"
+pre-commit = "^2.13.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+subgenix = "subgenix.cli:main"    
+    
+[tool.black]
+line-length = 120
+target-version = ['py310']
+      
+[tool.pytest.ini_options]
+testpaths = ["tests"]
