@@ -1,6 +1,6 @@
 # SubGenix
 
-SubGenix is a powerful video subtitle generator plugin.
+SubGenix is a video subtitle file generator.
 
 ## Installation
 
