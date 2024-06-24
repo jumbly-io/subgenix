@@ -14,13 +14,13 @@ click = "^8.1.7"
 aiofiles = "^23.2.1"
 tqdm = "^4.66.4"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^6.2.4"
 black = "^22.3.0"
 flake8 = "^4.0.1"
 ruff = "^0.0.241"
-mypy = "^0.812"
 pre-commit = "^2.13.0"
+mypy = "^1.10.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -41,3 +41,13 @@ max-line-length = 120
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "torch.*"
+ignore_errors = true

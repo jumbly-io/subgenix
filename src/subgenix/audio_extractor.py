@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 from loguru import logger
-from moviepy.editor import VideoFileClip
+from moviepy.editor import VideoFileClip  # type: ignore
 from .cache_manager import CacheManager
 from .progress_manager import ProgressManager
 

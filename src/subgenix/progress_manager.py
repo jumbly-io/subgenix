@@ -1,6 +1,6 @@
 import sys
 from typing import Optional
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
 
 class ProgressManager:

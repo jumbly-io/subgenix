@@ -1,7 +1,7 @@
 import asyncio
 from typing import Optional, List, Tuple, cast
 from loguru import logger
-import whisper
+import whisper  # type: ignore
 from whisper import Whisper
 import torch
 from .progress_manager import ProgressManager
