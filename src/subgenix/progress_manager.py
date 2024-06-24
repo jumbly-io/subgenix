@@ -16,6 +16,7 @@ class ProgressManager:
                 unit="step",
                 file=sys.stdout,
                 bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}" if total is not None else "{l_bar}{bar}",
+                disable=total is None,
             )
 
     def update_progress(self, steps: int = 1):
@@ -39,6 +40,7 @@ class ProgressManager:
             self.current_task.set_description(f"Failed: {description}")
             self.current_task.close()
             self.current_task = None
+        print(f"Task failed: {description}", file=sys.stderr)
 
     def print_message(self, message: str):
         if self.show_progress:

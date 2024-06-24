@@ -9,18 +9,25 @@ from .progress_manager import ProgressManager
 
 
 async def async_main(video_file, output, language, model, show_progress, structured_logging, use_gpu):
-    """Generate subtitles for a video file."""
+    """
+    The async main function. No click decorators should be here.
+
+    Generate subtitles for a video file.
+    """
     if structured_logging:
         logger.add("subgenix.log", serialize=True)
     else:
         logger.add("subgenix.log", format="{time} {level} {message}", level="INFO")
 
     logger.info(f"Processing video file: {video_file}")
-    logger.info(f"Output file: {output}")
-    logger.info(f"Language: {language}")
+
+    logger.info(f"Output file: {output or f'{video_file}.srt'}")
+
+    logger.info(f"Language: {language or 'Auto-detect'}")
+
     logger.info(f"Model: {model}")
-    logger.info(f"Show progress: {show_progress}")
-    logger.info(f"Use GPU: {use_gpu}")
+
+    logger.info(f"Use GPU: {'Yes' if use_gpu else 'No'}")
 
     # Instantiate objects from classes
     cache_manager = CacheManager(video_file)
@@ -33,7 +40,7 @@ async def async_main(video_file, output, language, model, show_progress, structu
         # Extract audio
         logger.info("Starting audio extraction")
         audio_file, duration = await audio_extractor.process_video(video_file)
-        logger.info(f"Audio extracted: {audio_file}, duration: {duration}")
+        logger.info(f"Audio extracted: {audio_file}, duration: {duration:.2f} seconds")
 
         # Transcribe audio
         logger.info("Starting audio transcription")
@@ -48,12 +55,15 @@ async def async_main(video_file, output, language, model, show_progress, structu
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}")
-        raise click.ClickException(str(e))
+        return 1
     finally:
         # Clean up any temporary files
-        logger.info("Starting cleanup")
+        logger.info("Starting cleanup of temporary files")
         await cache_manager.cleanup()
         logger.info("Cleanup completed")
+
+    logger.info("Subtitle generation process completed successfully")
+    return 0
 
 
 @click.command()
@@ -71,7 +81,10 @@ async def async_main(video_file, output, language, model, show_progress, structu
 @click.option("--structured-logging", is_flag=True, help="Enable structured logging output")
 @click.option("--use-gpu", is_flag=True, help="Use GPU for acceleration if available")
 def main(video_file, output, language, model, show_progress, structured_logging, use_gpu):
-    asyncio.run(async_main(video_file, output, language, model, show_progress, structured_logging, use_gpu))
+    """
+    The main function. Must not be asyncio. This is where our command decorators should be.
+    """
+    return asyncio.run(async_main(video_file, output, language, model, show_progress, structured_logging, use_gpu))
 
 
 if __name__ == "__main__":

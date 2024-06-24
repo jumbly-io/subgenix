@@ -20,7 +20,7 @@ class AudioExtractor:
             return str(audio_file)
 
         logger.info(f"Extracting audio from {video_file}")
-        self.progress_manager.start_task("Extracting audio")
+        print("Extracting audio...")  # Simple print statement instead of progress bar
 
         try:
             with VideoFileClip(video_file) as video:
@@ -33,18 +33,18 @@ class AudioExtractor:
                 await loop.run_in_executor(None, lambda: audio.write_audiofile(str(audio_file), codec="pcm_s16le"))
 
             logger.info(f"Audio extracted successfully: {audio_file}")
-            self.progress_manager.complete_task("Extracting audio")
+            print("Audio extraction completed")  # Simple print statement instead of progress bar
             return str(audio_file)
 
         except Exception as e:
             logger.error(f"Error extracting audio: {str(e)}")
-            self.progress_manager.fail_task("Extracting audio")
+            print(f"Audio extraction failed: {str(e)}")  # Simple print statement instead of progress bar
             raise
 
     async def get_video_duration(self, video_file: str) -> float:
         try:
             with VideoFileClip(video_file) as video:
-                return float(video.duration)  # Explicitly cast to float
+                return float(video.duration)
         except Exception as e:
             logger.error(f"Error getting video duration: {str(e)}")
             raise
