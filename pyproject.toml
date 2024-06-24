@@ -8,6 +8,9 @@ packages = [{ include = "src" }]
 [tool.poetry.dependencies]
 python = "^3.10"
 loguru = "^0.5.3"
+openai-whisper = "^20231117"
+torch = "^2.3.1"
+click = "^8.1.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
@@ -22,11 +25,11 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-subgenix = "src.subgenix.cli:main"    
-    
+subgenix = "src.subgenix.cli:main"
+
 [tool.black]
 line-length = 120
 target-version = ['py310']
-      
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
