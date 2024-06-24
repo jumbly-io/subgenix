@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, cast
 from loguru import logger
 import whisper  # type: ignore
 from whisper import Whisper
@@ -12,19 +12,23 @@ class AudioTranscriber:
         self.progress_manager = progress_manager
         self.model_name = model_name
         self.model: Optional[Whisper] = None
-
         logger.info("AudioTranscriber initialized")
+
+    def load_model(self, use_gpu: bool) -> Whisper:
+        if self.model is None:
+            device = "cuda" if use_gpu and torch.cuda.is_available() else "cpu"
+            self.model = whisper.load_model(self.model_name, device=device)
+        assert self.model is not None, "Model not loaded properly"
+        return self.model
 
     async def transcribe_audio(
         self, audio_file: str, language: Optional[str], use_gpu: bool
     ) -> List[Tuple[float, float, str]]:
-        self.progress_manager.start_task("Transcribing audio", total=None)  # Set total to None
+        self.progress_manager.start_task("Transcribing audio", total=None)
         logger.info(f"Loading Whisper model: {self.model_name}")
 
-        device = "cuda" if use_gpu and torch.cuda.is_available() else "cpu"
-
         try:
-            self.model = whisper.load_model(self.model_name, device=device)
+            model = self.load_model(use_gpu)
             self.progress_manager.complete_task("Model loaded")
 
             self.progress_manager.start_task("Transcribing audio")
@@ -32,12 +36,8 @@ class AudioTranscriber:
 
             loop = asyncio.get_event_loop()
 
-            # Use type guard to check that model is not None
-            if not is_model_loaded(self.model):
-                raise ValueError("Model not loaded properly")
-
             result = await loop.run_in_executor(
-                None, lambda: self.model.transcribe(audio_file, language=language, word_timestamps=True)
+                None, lambda: model.transcribe(audio_file, language=language, word_timestamps=True)
             )
 
             word_timestamps = self._extract_word_timestamps(result)
@@ -61,13 +61,8 @@ class AudioTranscriber:
         return word_timestamps
 
     async def detect_language(self, audio_file: str) -> str:
-        if self.model is None:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            self.model = whisper.load_model(self.model_name, device=device)
-
-        if not is_model_loaded(self.model):
-            raise ValueError("Model not loaded properly")
+        model = self.load_model(use_gpu=False)
 
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, lambda: self.model.detect_language(audio_file))  # type: ignore
+        result = await loop.run_in_executor(None, lambda: model.detect_language(audio_file))
         return cast(str, result)
