@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, List, Tuple, cast
+from typing import Optional, List, Tuple
 from loguru import logger
 import whisper  # type: ignore
 from whisper import Whisper
@@ -31,17 +31,19 @@ class AudioTranscriber:
             logger.info(f"Transcribing audio file: {audio_file}")
 
             loop = asyncio.get_event_loop()
-            if self.model is not None:
-                result = await loop.run_in_executor(
-                    None, lambda: self.model.transcribe(audio_file, language=language, word_timestamps=True)
-                )
 
-                word_timestamps = self._extract_word_timestamps(result)
-
-                self.progress_manager.complete_task("Transcription completed")
-                return word_timestamps
-            else:
+            # Use type guard to check that model is not None
+            if not is_model_loaded(self.model):
                 raise ValueError("Model not loaded properly")
+
+            result = await loop.run_in_executor(
+                None, lambda: self.model.transcribe(audio_file, language=language, word_timestamps=True)
+            )
+
+            word_timestamps = self._extract_word_timestamps(result)
+
+            self.progress_manager.complete_task("Transcription completed")
+            return word_timestamps
 
         except Exception as e:
             logger.error(f"Error transcribing audio: {str(e)}")
@@ -63,7 +65,7 @@ class AudioTranscriber:
             device = "cuda" if torch.cuda.is_available() else "cpu"
             self.model = whisper.load_model(self.model_name, device=device)
 
-        if self.model is None:
+        if not is_model_loaded(self.model):
             raise ValueError("Model not loaded properly")
 
         loop = asyncio.get_event_loop()
