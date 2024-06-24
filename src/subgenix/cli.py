@@ -1,11 +1,11 @@
 import asyncio
 import click
 from loguru import logger
-from .audio_extractor import extract_audio
-from .speech_to_text import transcribe_audio
-from .subtitle_generator import generate_subtitles
+from .audio_extractor import AudioExtractor
+from .audio_transcriber import AudioTranscriber
+from .subtitle_generator import SubtitleGenerator
 from .cache_manager import CacheManager
-from .progress_display import ProgressDisplay
+from .progress_manager import ProgressManager
 
 
 @click.command()
@@ -25,18 +25,22 @@ async def main(video_file, output, language, translate_to, show_progress, struct
 
     logger.info(f"Processing video file: {video_file}")
 
+    # Instantiate objects from classes
     cache_manager = CacheManager(video_file)
-    progress_display = ProgressDisplay(show_progress)
+    progress_manager = ProgressManager(show_progress)
+    audio_extractor = AudioExtractor(cache_manager, progress_manager)
+    audio_transcriber = AudioTranscriber(progress_manager)
+    subtitle_generator = SubtitleGenerator(progress_manager)
 
     try:
         # Extract audio
-        audio_file = await extract_audio(video_file, cache_manager, progress_display)
+        audio_file, duration = await audio_extractor.process_video(video_file)
 
         # Transcribe audio
-        transcription = await transcribe_audio(audio_file, language, use_gpu, progress_display)
+        transcription = await audio_transcriber.transcribe_audio(audio_file, language, use_gpu)
 
         # Generate subtitles
-        srt_file = await generate_subtitles(transcription, output or f"{video_file}.srt", progress_display)
+        srt_file = await subtitle_generator.generate_subtitles(transcription, output or f"{video_file}.srt")
 
         if translate_to:
             # TODO: Implement translation
