@@ -20,7 +20,7 @@ class ProgressManager:
             )
 
     def update_progress(self, steps: int = 1):
-        if self.show_progress and self.current_task:
+        if self.show_progress and self.current_task and not self.current_task.disable:
             self.current_task.update(steps)
 
     def set_total(self, total: int):

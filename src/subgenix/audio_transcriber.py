@@ -18,7 +18,7 @@ class AudioTranscriber:
     async def transcribe_audio(
         self, audio_file: str, language: Optional[str], use_gpu: bool
     ) -> List[Tuple[float, float, str]]:
-        self.progress_manager.start_task("Loading transcription model")
+        self.progress_manager.start_task("Transcribing audio", total=None)  # Set total to None
         logger.info(f"Loading Whisper model: {self.model_name}")
 
         device = "cuda" if use_gpu and torch.cuda.is_available() else "cpu"
@@ -33,8 +33,7 @@ class AudioTranscriber:
             loop = asyncio.get_event_loop()
             if self.model is not None:
                 result = await loop.run_in_executor(
-                    None,
-                    lambda: cast(Whisper, self.model).transcribe(audio_file, language=language, word_timestamps=True),
+                    None, lambda: self.model.transcribe(audio_file, language=language, word_timestamps=True)
                 )
 
                 word_timestamps = self._extract_word_timestamps(result)
