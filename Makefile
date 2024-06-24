@@ -32,17 +32,15 @@ UNDERLINE := \033[4m
 build: dist
 
 ## Set up the development environment
-develop: dev-install
+develop:
+	@printf "$(BLUE)Set up the development environment...$(NC)\n"
+	@$(POETRY) install
+	@$(POETRY) run pre-commit install
 
 ## Install the distribution package
 install: dist
 	@printf "$(BLUE)Installing distribution package...$(NC)\n"
 	@$(PIP) install --force-reinstall dist/*.whl
-
-## Install development dependencies
-dev-install:
-	@printf "$(BLUE)Installing development dependencies...$(NC)\n"
-	@$(POETRY) install
 
 ## Run tests
 test:
