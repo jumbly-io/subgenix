@@ -30,9 +30,7 @@ class AudioExtractor:
 
                 # Use asyncio to run the CPU-bound task in a separate thread
                 loop = asyncio.get_event_loop()
-                await loop.run_in_executor(
-                    None, lambda: audio.write_audiofile(str(audio_file), codec="pcm_s16le", progress_bar=False)
-                )
+                await loop.run_in_executor(None, lambda: audio.write_audiofile(str(audio_file), codec="pcm_s16le"))
 
             logger.info(f"Audio extracted successfully: {audio_file}")
             self.progress_manager.complete_task("Extracting audio")
@@ -46,7 +44,7 @@ class AudioExtractor:
     async def get_video_duration(self, video_file: str) -> float:
         try:
             with VideoFileClip(video_file) as video:
-                return float(video.duration)
+                return float(video.duration)  # Explicitly cast to float
         except Exception as e:
             logger.error(f"Error getting video duration: {str(e)}")
             raise

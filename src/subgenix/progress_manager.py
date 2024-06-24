@@ -15,7 +15,7 @@ class ProgressManager:
                 desc=description,
                 unit="step",
                 file=sys.stdout,
-                bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}",
+                bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}" if total is not None else "{l_bar}{bar}",
             )
 
     def update_progress(self, steps: int = 1):
