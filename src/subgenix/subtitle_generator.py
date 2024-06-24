@@ -1,6 +1,4 @@
-import asyncio
 from typing import List, Tuple
-from pathlib import Path
 from loguru import logger
 import aiofiles
 from .progress_manager import ProgressManager
@@ -9,6 +7,8 @@ from .progress_manager import ProgressManager
 class SubtitleGenerator:
     def __init__(self, progress_manager: ProgressManager):
         self.progress_manager = progress_manager
+
+        logger.info("SubtitleGenerator initialized")
 
     async def generate_subtitles(self, word_timestamps: List[Tuple[float, float, str]], output_file: str) -> str:
         self.progress_manager.start_task("Generating subtitles")
@@ -64,6 +64,3 @@ class SubtitleGenerator:
         minutes = int((seconds % 3600) // 60)
         seconds = seconds % 60
         return f"{hours:02d}:{minutes:02d}:{seconds:06.3f}".replace(".", ",")
-
-
-logger.info("SubtitleGenerator initialized")

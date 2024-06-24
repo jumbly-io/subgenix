@@ -1,4 +1,3 @@
-import os
 import json
 from pathlib import Path
 from typing import Any, Optional
@@ -14,6 +13,8 @@ class CacheManager:
         self.metadata_file = self.base_dir / "metadata.json"
         self.metadata = self._load_metadata()
         self.temp_files = set()
+
+        logger.info(f"CacheManager initialized for video file: {self.video_file}")
 
     def _load_metadata(self) -> dict:
         if self.metadata_file.exists():
@@ -78,6 +79,3 @@ class CacheManager:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._save_metadata()
-
-
-logger.info(f"CacheManager initialized for video file: {self.video_file}")

@@ -1,5 +1,4 @@
 import asyncio
-from pathlib import Path
 from typing import Optional, List, Tuple
 from loguru import logger
 import whisper
@@ -12,6 +11,8 @@ class AudioTranscriber:
         self.progress_manager = progress_manager
         self.model_name = model_name
         self.model = None
+
+        logger.info("AudioTranscriber initialized")
 
     async def transcribe_audio(
         self, audio_file: str, language: Optional[str], use_gpu: bool
@@ -62,6 +63,3 @@ class AudioTranscriber:
         result = await loop.run_in_executor(None, lambda: self.model.detect_language(audio_file))
 
         return result
-
-
-logger.info("AudioTranscriber initialized")

@@ -55,7 +55,8 @@ format:
 ## Lint code with flake8 and ruff
 lint:
 	@printf "$(BLUE)Linting code...$(NC)\n"
-	@$(POETRY) run flake8 . && $(POETRY) run ruff check .
+	$(POETRY) run flake8 .
+	$(POETRY) run ruff check .
 
 ## Type-check code with mypy
 type-check:

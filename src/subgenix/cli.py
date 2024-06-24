@@ -7,11 +7,18 @@ from .subtitle_generator import SubtitleGenerator
 from .cache_manager import CacheManager
 from .progress_manager import ProgressManager
 
+
 @click.command()
 @click.argument("video_file", type=click.Path(exists=True))
 @click.option("--output", "-o", default=None, help="Output SRT file path")
 @click.option("--language", "-l", default=None, help="Override auto-detected language")
-@click.option("--model", "-m", default="base", type=click.Choice(["tiny", "base", "small", "medium", "large"]), help="Whisper model size")
+@click.option(
+    "--model",
+    "-m",
+    default="base",
+    type=click.Choice(["tiny", "base", "small", "medium", "large"]),
+    help="Whisper model size",
+)
 @click.option("--show-progress/--hide-progress", default=True, help="Show/hide progress bar")
 @click.option("--structured-logging", is_flag=True, help="Enable structured logging output")
 @click.option("--use-gpu", is_flag=True, help="Use GPU for acceleration if available")
@@ -50,6 +57,7 @@ async def main(video_file, output, language, model, show_progress, structured_lo
     finally:
         # Clean up any temporary files
         await cache_manager.cleanup()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,0 +1,5 @@
+# NOTE: The version of flake8 we're using is older and doesn't support pyproject.toml.
+# TODO: Upgrade flake8 without breaking anything.
+
+[flake8]
+max-line-length = 120
