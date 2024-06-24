@@ -1,7 +1,8 @@
 import asyncio
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, cast
 from loguru import logger
 import whisper
+from whisper import Whisper
 import torch
 from .progress_manager import ProgressManager
 
@@ -10,7 +11,7 @@ class AudioTranscriber:
     def __init__(self, progress_manager: ProgressManager, model_name: str = "base"):
         self.progress_manager = progress_manager
         self.model_name = model_name
-        self.model = None
+        self.model: Optional[Whisper] = None
 
         logger.info("AudioTranscriber initialized")
 
@@ -30,14 +31,18 @@ class AudioTranscriber:
             logger.info(f"Transcribing audio file: {audio_file}")
 
             loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None, lambda: self.model.transcribe(audio_file, language=language, word_timestamps=True)
-            )
+            if self.model is not None:
+                result = await loop.run_in_executor(
+                    None,
+                    lambda: cast(Whisper, self.model).transcribe(audio_file, language=language, word_timestamps=True),
+                )
 
-            word_timestamps = self._extract_word_timestamps(result)
+                word_timestamps = self._extract_word_timestamps(result)
 
-            self.progress_manager.complete_task("Transcription completed")
-            return word_timestamps
+                self.progress_manager.complete_task("Transcription completed")
+                return word_timestamps
+            else:
+                raise ValueError("Model not loaded properly")
 
         except Exception as e:
             logger.error(f"Error transcribing audio: {str(e)}")
@@ -59,7 +64,9 @@ class AudioTranscriber:
             device = "cuda" if torch.cuda.is_available() else "cpu"
             self.model = whisper.load_model(self.model_name, device=device)
 
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, lambda: self.model.detect_language(audio_file))
-
-        return result
+        if self.model is not None:
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(None, lambda: cast(Whisper, self.model).detect_language(audio_file))
+            return result
+        else:
+            raise ValueError("Model not loaded properly")

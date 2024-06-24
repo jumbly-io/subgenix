@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Set
 from loguru import logger
 import asyncio
 
@@ -12,7 +12,7 @@ class CacheManager:
         self.base_dir.mkdir(parents=True, exist_ok=True)
         self.metadata_file = self.base_dir / "metadata.json"
         self.metadata = self._load_metadata()
-        self.temp_files = set()
+        self.temp_files: Set[Path] = set()
 
         logger.info(f"CacheManager initialized for video file: {self.video_file}")
 
