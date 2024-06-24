@@ -46,7 +46,7 @@ class AudioExtractor:
     async def get_video_duration(self, video_file: str) -> float:
         try:
             with VideoFileClip(video_file) as video:
-                return video.duration
+                return float(video.duration)
         except Exception as e:
             logger.error(f"Error getting video duration: {str(e)}")
             raise

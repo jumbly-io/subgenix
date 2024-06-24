@@ -33,8 +33,7 @@ make shell
 - `make install`: Install the distribution package
 - `make test`: Run tests
 - `make format`: Format code with black
-- `make lint`: Lint code with flake8 and ruff
-- `make type-check`: Type-check code with mypy
+- `make lint`: Lint and type-check code with flake8, ruff and mypy
 - `make image`: Build or rebuild container image
 - `make help`: Display help message
 

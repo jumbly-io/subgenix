@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Optional, Set
+from typing import Any, Optional, Dict, Set, TypeGuard
 from loguru import logger
 import asyncio
 
@@ -16,10 +16,17 @@ class CacheManager:
 
         logger.info(f"CacheManager initialized for video file: {self.video_file}")
 
-    def _load_metadata(self) -> dict:
+    def _is_valid_metadata(self, data: Any) -> TypeGuard[Dict[str, Any]]:
+        return isinstance(data, dict) and all(isinstance(k, str) for k in data.keys())
+
+    def _load_metadata(self) -> Dict[str, Any]:
         if self.metadata_file.exists():
             with open(self.metadata_file, "r") as f:
-                return json.load(f)
+                data = json.load(f)
+                if self._is_valid_metadata(data):
+                    return data
+                else:
+                    logger.warning("Invalid metadata format, returning empty dict")
         return {}
 
     def _save_metadata(self):

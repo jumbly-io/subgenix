@@ -64,9 +64,9 @@ class AudioTranscriber:
             device = "cuda" if torch.cuda.is_available() else "cpu"
             self.model = whisper.load_model(self.model_name, device=device)
 
-        if self.model is not None:
-            loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(None, lambda: cast(Whisper, self.model).detect_language(audio_file))
-            return result
-        else:
+        if self.model is None:
             raise ValueError("Model not loaded properly")
+
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, lambda: self.model.detect_language(audio_file))  # type: ignore
+        return cast(str, result)

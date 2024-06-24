@@ -23,7 +23,7 @@ BOLD := \033[1m
 UNDERLINE := \033[4m
 
 # Define phony targets
-.PHONY: build develop install dev-install test format lint type-check image shell ls dist clean help
+.PHONY: build develop install dev-install test format lint image shell ls dist clean help
 
 # Set default goal to help
 .DEFAULT_GOAL := help
@@ -52,14 +52,11 @@ format:
 	@printf "$(BLUE)Formatting code...$(NC)\n"
 	@$(POETRY) run black .
 
-## Lint code with flake8 and ruff
+## Lint and type-check code with flake8, ruff, mypy
 lint:
 	@printf "$(BLUE)Linting code...$(NC)\n"
 	$(POETRY) run flake8 .
 	$(POETRY) run ruff check .
-
-## Type-check code with mypy
-type-check:
 	@printf "$(BLUE)Type-checking code...$(NC)\n"
 	@$(POETRY) run mypy src/
 
