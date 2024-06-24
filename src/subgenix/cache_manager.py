@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from typing import Any, Optional
 from loguru import logger
+import asyncio
 
 
 class CacheManager:
@@ -12,6 +13,7 @@ class CacheManager:
         self.base_dir.mkdir(parents=True, exist_ok=True)
         self.metadata_file = self.base_dir / "metadata.json"
         self.metadata = self._load_metadata()
+        self.temp_files = set()
 
     def _load_metadata(self) -> dict:
         if self.metadata_file.exists():
@@ -24,7 +26,9 @@ class CacheManager:
             json.dump(self.metadata, f)
 
     def get_cache_path(self, filename: str) -> Path:
-        return self.base_dir / filename
+        path = self.base_dir / filename
+        self.temp_files.add(path)
+        return path
 
     def cache_exists(self, key: str) -> bool:
         return key in self.metadata and self.get_cache_path(self.metadata[key]["filename"]).exists()
@@ -50,31 +54,24 @@ class CacheManager:
         self.metadata[key] = {"filename": filename, "type": type(data).__name__}
         self._save_metadata()
 
-    def clear_cache(self, key: Optional[str] = None):
-        if key is None:
-            # Clear all cache
-            for file in self.base_dir.iterdir():
-                if file.is_file():
-                    file.unlink()
-            self.metadata = {}
-        elif key in self.metadata:
-            # Clear specific cache
-            cache_path = self.get_cache_path(self.metadata[key]["filename"])
-            if cache_path.exists():
-                cache_path.unlink()
-            del self.metadata[key]
+    async def cleanup(self):
+        logger.info("Starting cleanup of temporary files")
+        for file in self.temp_files:
+            try:
+                if await asyncio.to_thread(file.exists):
+                    await asyncio.to_thread(file.unlink)
+                    logger.debug(f"Removed temporary file: {file}")
+            except Exception as e:
+                logger.error(f"Error removing temporary file {file}: {str(e)}")
 
-        self._save_metadata()
+        if not any(self.base_dir.iterdir()):
+            await asyncio.to_thread(self.base_dir.rmdir)
+            logger.info(f"Removed empty cache directory: {self.base_dir}")
+        else:
+            logger.info(f"Cache directory not empty, keeping: {self.base_dir}")
 
-    def get_cache_size(self) -> int:
-        return sum(f.stat().st_size for f in self.base_dir.glob("**/*") if f.is_file())
-
-    def get_cache_info(self) -> dict:
-        return {
-            "cache_size": self.get_cache_size(),
-            "num_files": len(list(self.base_dir.glob("**/*"))),
-            "metadata": self.metadata,
-        }
+        self.temp_files.clear()
+        logger.info("Cleanup completed")
 
     def __enter__(self):
         return self
