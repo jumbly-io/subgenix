@@ -61,7 +61,7 @@ lint:
 ## Type-check code with mypy
 type-check:
 	@printf "$(BLUE)Type-checking code...$(NC)\n"
-	@$(POETRY) run mypy --config-file=pyproject.toml src/
+	@$(POETRY) run mypy src/
 
 ## Build Docker image
 image:
