@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "subgenix"
-version = "0.1.0"
+version = "1.0.0"
 description = "Object oriented Python tool to generate subtitles from video files"
 authors = ["JMDOTS <contact@jmdots.com>", "Mark L. Dotson <mdotson888@gmail.com>"]
 packages = [{ include = "src" }]
@@ -8,25 +8,50 @@ packages = [{ include = "src" }]
 [tool.poetry.dependencies]
 python = "^3.10"
 loguru = "^0.5.3"
+openai-whisper = "^20231117"
+torch = "^2.3.1"
+click = "^8.1.7"
+aiofiles = "^23.2.1"
+tqdm = "^4.66.4"
 
-[tool.poetry.dev-dependencies]
+types-aiofiles = "^23.2.0.20240623"
+moviepy = "^1.0.3"
+typeguard = "^4.3.0"
+[tool.poetry.group.dev.dependencies]
 pytest = "^6.2.4"
-black = "^22.3.0"
-flake8 = "^4.0.1"
+black = "24.4.2"
+flake8 = "^7.1.0"
 ruff = "^0.0.241"
-mypy = "^0.812"
 pre-commit = "^2.13.0"
+mypy = "^1.10.0"
 
+flake8-pyproject = "^1.2.3"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-subgenix = "src.subgenix.cli:main"    
-    
+subgenix = "src.subgenix.cli:main"
+
 [tool.black]
 line-length = 120
 target-version = ['py310']
-      
+
+[tool.ruff]
+line-length = 120
+
+[tool.flake8]
+max-line-length = 120
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "torch.*"
+ignore_errors = true
