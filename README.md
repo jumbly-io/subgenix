@@ -37,6 +37,16 @@ make shell
 - `make image`: Build or rebuild container image
 - `make help`: Display help message
 
+## Deployment Contexts
+
+This project has been successfully deployed and tested in the following contexts:
+
+| **Operating System**       | **CPU**          | **GPU**                       | **Memory** | **Performance** |
+|----------------------------|------------------|-------------------------------|------------|-----------------|
+| Ubuntu 22.04.4 LTS (amd64) | Intel i9-14900HX | NVIDIA RTX 4090 (16GB) Mobile |  64GB DDR5 | 10 minutes of video processed in approximately 1 minute (\*) using large model on GPU. |
+
+(\*) Time does not include model download.
+
 ## Contributing
 
 We welcome contributions! Follow these steps:
