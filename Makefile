@@ -23,13 +23,15 @@ BOLD := \033[1m
 UNDERLINE := \033[4m
 
 # Define phony targets
-.PHONY: build develop install dev-install test format lint image shell ls dist clean help
+.PHONY: build develop install dev-install test format lint image shell ls clean help
 
 # Set default goal to help
 .DEFAULT_GOAL := help
 
 ## Build the distribution package
-build: dist
+build: clean
+	@printf "$(BLUE)Building distribution package...$(NC)\n"
+	@$(POETRY) build
 
 ## Set up the development environment
 develop:
@@ -38,9 +40,10 @@ develop:
 	@$(POETRY) run pre-commit install
 
 ## Install the distribution package
-install: dist
+install: build
 	@printf "$(BLUE)Installing distribution package...$(NC)\n"
-	@$(PIP) install --force-reinstall dist/*.whl
+	@$(PIP) uninstall -y subgenix  # TODO: Parameterize this.
+	@$(PIP) install dist/*.whl
 
 ## Run tests
 test:
@@ -75,15 +78,16 @@ ls:
 	@printf "$(BLUE)Listing all files in the project...$(NC)\n"
 	@git ls-files --cached --others --exclude-standard
 
-## Build distribution package
-dist: clean
-	@printf "$(BLUE)Building distribution package...$(NC)\n"
-	@$(POETRY) build
-
 ## Clean up build artifacts
 clean:
 	@printf "$(BLUE)Cleaning up build artifacts...$(NC)\n"
 	@rm -rf ./dist
+
+## Cycle the installation for interactive testing
+iterate: format lint test install
+	@printf "$(BLUE)Cycling the installation for interactive testing...$(NC)\n"
+	subgenix ~/Videos/393906.mp4 --output ~/Videos/393906.mp4.srt --model medium --use-gpu
+	## TODO: Make this portable and parameterize it.
 
 ## Display this help message
 help:
