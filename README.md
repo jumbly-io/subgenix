@@ -1,6 +1,6 @@
 # SubGenix
 
-SubGenix is a video subtitle file generator.
+SubGenix(TM) is a video subtitle file generator.
 
 ## Installation
 
@@ -90,14 +90,38 @@ SubGenix is designed to assist in generating subtitles for video content. Use th
 
 SubGenix is provided as-is, without warranty. The developers are not responsible for any misuse. By using SubGenix, you agree to use it only for lawful and ethical purposes.
 
+## Third-Party Licenses
+
+SubGenix(TM) uses the following open-source packages:
+
+- [MIT License](https://opensource.org/licenses/MIT):
+  - Loguru
+  - OpenAI Whisper
+  - MoviePy
+  - Typeguard
+  - pytest
+  - black
+  - flake8
+  - ruff
+  - pre-commit
+  - mypy
+- [BSD License](https://opensource.org/licenses/BSD-3-Clause):
+  - PyTorch
+- [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause):
+  - Click
+- [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0):
+  - aiofiles
+  - types-aiofiles
+- [PSF License Agreement](https://docs.python.org/3/license.html):
+  - Python
+- [MIT License](https://opensource.org/licenses/MIT) and [MPL 2.0 (Mozilla Public License 2.0)](https://www.mozilla.org/en-US/MPL/2.0/):
+  - tqdm
+
+Please see the linked license texts for full details.
+
 ## License
 
-This project includes components licensed under:
-
-- GNU General Public License (GPL) version 3.0:
-  - TODO: List the projects here.
-
-This project is dual-licensed under the JMDOTS-DUAL-LICENSE-1.2:
+SubGenix(TM) itself is dual-licensed under the JMDOTS-DUAL-LICENSE-1.2:
 
 1. **Personal, Non-Commercial License**: GNU Affero General Public License (AGPL) version 3 or later.
 2. **Commercial License**: Available for business, commercial, enterprise, or governmental use.

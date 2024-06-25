@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "subgenix"
-version = "0.1.0"
+version = "1.0.0"
 description = "Object oriented Python tool to generate subtitles from video files"
 authors = ["JMDOTS <contact@jmdots.com>", "Mark L. Dotson <mdotson888@gmail.com>"]
 packages = [{ include = "src" }]
