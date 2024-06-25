@@ -55,14 +55,16 @@ async def async_main(video_file, output, language, model, show_progress, structu
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}")
+        click.echo(f"Error: {str(e)}", err=True)
         return 1
     finally:
         # Clean up any temporary files
-        logger.info("Starting cleanup of temporary files")
+        logger.info("Starting cleanup")
         await cache_manager.cleanup()
         logger.info("Cleanup completed")
 
     logger.info("Subtitle generation process completed successfully")
+    click.echo("Subtitle generation process completed successfully.")
     return 0
 
 
