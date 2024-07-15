@@ -28,23 +28,26 @@ class SubtitleGenerator:
         base_name = os.path.splitext(output_file)[0]
         return f"{base_name}.srt"
 
-    def _group_words_into_segments(
-        self, word_timestamps: List[Tuple[float, float, str]]
-    ) -> List[Tuple[float, float, str]]:
-        segments = []
-        current_segment = []
-        current_start_time = word_timestamps[0][0]
-        max_segment_duration = 5.0  # Maximum duration for a single subtitle
-        for start, end, word in word_timestamps:
-            current_segment.append(word)
-            if end - current_start_time >= max_segment_duration or len(current_segment) >= 10:
-                segments.append((current_start_time, end, " ".join(current_segment)))
-                current_segment = []
-                current_start_time = end
-        # Add any remaining words
-        if current_segment:
-            segments.append((current_start_time, word_timestamps[-1][1], " ".join(current_segment)))
-        return segments
+    def _group_words_into_segments(self, word_timestamps: List[Tuple[float, float, str]]) -> List[Tuple[float, float, str]]:
+    segments = []
+    current_segment = []
+    current_start_time = word_timestamps[0][0]
+    max_segment_duration = 5.0  # Maximum duration for a single subtitle
+    max_pause_duration = 2.0  # Maximum duration of a pause before creating a new subtitle
+
+    for i in range(1, len(word_timestamps)):
+        start, end, word = word_timestamps[i]
+        current_segment.append(word)
+        if end - current_start_time >= max_segment_duration or end - word_timestamps[i - 1][1] >= max_pause_duration:
+            segments.append((current_start_time, word_timestamps[i-1][1], " ".join(current_segment)))
+            current_segment = []
+            current_start_time = end
+
+    # Add the last segment
+    if current_segment:
+        segments.append((current_start_time, word_timestamps[-1][1], " ".join(current_segment)))
+
+    return segments
 
     async def _write_srt_file(self, segments: List[Tuple[float, float, str]], output_file: str):
         total_segments = len(segments)
