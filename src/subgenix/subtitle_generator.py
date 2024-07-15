@@ -2,6 +2,7 @@ from typing import List, Tuple
 from loguru import logger
 import aiofiles
 from .progress_manager import ProgressManager
+import os
 
 
 class SubtitleGenerator:
@@ -14,6 +15,7 @@ class SubtitleGenerator:
         logger.info(f"Generating subtitles for output file: {output_file}")
         try:
             subtitle_segments = self._group_words_into_segments(word_timestamps)
+            output_file = self._get_srt_filename(output_file)
             await self._write_srt_file(subtitle_segments, output_file)
             self.progress_manager.complete_task("Subtitles generated")
             return output_file
@@ -21,6 +23,10 @@ class SubtitleGenerator:
             logger.error(f"Error generating subtitles: {str(e)}")
             self.progress_manager.fail_task("Subtitle generation failed")
             raise
+
+    def _get_srt_filename(self, output_file: str) -> str:
+        base_name = os.path.splitext(output_file)[0]
+        return f"{base_name}.srt"
 
     def _group_words_into_segments(
         self, word_timestamps: List[Tuple[float, float, str]]
