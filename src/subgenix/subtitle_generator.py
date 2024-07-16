@@ -5,7 +5,6 @@ from .progress_manager import ProgressManager
 
 
 class SubtitleGenerator:
-    min_gap_duration = 0.5 # Define the minimum gap duration as a class attribute
     def __init__(self, progress_manager: ProgressManager):
         self.progress_manager = progress_manager
         logger.info("SubtitleGenerator initialized")
@@ -41,6 +40,7 @@ class SubtitleGenerator:
         if current_segment:
             segment_text = ' '.join(current_segment)
             segments.append((current_start_time, word_timestamps[-1][1], segment_text))
+            min_gap_duration = 0.5      # Define the minimum gap duration
             max_segment_duration = 5.0  # Maximum duration for a single subtitle
         for i in range(len(segments) - 1):
             start_time, end_time, text = segments[i]
