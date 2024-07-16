@@ -1,46 +1,64 @@
-from typing import List, Tuple
+from typing import List, Tuple, Sequence
 from loguru import logger
 import aiofiles
 from .progress_manager import ProgressManager
 import os
 
 class SubtitleGenerator:
+    MAX_SEGMENT_DURATION = 5.0  # Maximum duration for a single subtitle
+    MAX_PAUSE_DURATION = 2.0  # Maximum duration of a pause before creating a new subtitle
+
     def __init__(self, progress_manager: ProgressManager):
         self.progress_manager = progress_manager
         logger.info("SubtitleGenerator initialized")
 
-    async def generate_subtitles(self, word_timestamps: List[Tuple[float, float, str]], output_file: str) -> str:
+    async def generate_subtitles(self, word_timestamps: Sequence[Tuple[float, float, str]], output_file: str) -> str:
+        """
+        Generate subtitles from word timestamps and write them to an SRT file.
+
+        Args:
+            word_timestamps: A sequence of tuples containing (start_time, end_time, word).
+            output_file: The path to the output file.
+
+        Returns:
+            The path to the generated SRT file.
+
+        Raises:
+            Exception: If there's an error during subtitle generation.
+        """
         self.progress_manager.start_task("Generating subtitles")
         logger.info(f"Generating subtitles for output file: {output_file}")
         try:
             subtitle_segments = self._group_words_into_segments(word_timestamps)
-            output_file = self._get_srt_filename(output_file)
-            await self._write_srt_file(subtitle_segments, output_file)
+            srt_filename = self._get_srt_filename(output_file)
+            await self._write_srt_file(subtitle_segments, srt_filename)
             self.progress_manager.complete_task("Subtitles generated")
-            return output_file
+            return srt_filename
         except Exception as e:
-            logger.error(f"Error generating subtitles: {str(e)}")
+            logger.exception(f"Error generating subtitles: {str(e)}")
             self.progress_manager.fail_task("Subtitle generation failed")
             raise
 
     def _get_srt_filename(self, output_file: str) -> str:
+        """Convert the output filename to an SRT filename."""
         base_name = os.path.splitext(output_file)[0]
         return f"{base_name}.srt"
 
-    def _group_words_into_segments(self, word_timestamps: List[Tuple[float, float, str]]) -> List[Tuple[float, float, str]]:
+    def _group_words_into_segments(self, word_timestamps: Sequence[Tuple[float, float, str]]) -> List[Tuple[float, float, str]]:
+        """Group words into subtitle segments based on timing constraints."""
         segments = []
         current_segment = []
         current_start_time = word_timestamps[0][0]
-        max_segment_duration = 5.0  # Maximum duration for a single subtitle
-        max_pause_duration = 2.0  # Maximum duration of a pause before creating a new subtitle
 
-        for i in range(1, len(word_timestamps)):
-            start, end, word = word_timestamps[i]
+        for i, (start, end, word) in enumerate(word_timestamps[1:], 1):
             current_segment.append(word)
-            if end - current_start_time >= max_segment_duration or end - word_timestamps[i - 1][1] >= max_pause_duration:
+            segment_duration = end - current_start_time
+            pause_duration = start - word_timestamps[i-1][1]
+
+            if segment_duration >= self.MAX_SEGMENT_DURATION or pause_duration >= self.MAX_PAUSE_DURATION:
                 segments.append((current_start_time, word_timestamps[i-1][1], " ".join(current_segment)))
                 current_segment = []
-                current_start_time = end
+                current_start_time = start
 
         # Add the last segment
         if current_segment:
@@ -48,18 +66,26 @@ class SubtitleGenerator:
 
         return segments
 
-    async def _write_srt_file(self, segments: List[Tuple[float, float, str]], output_file: str):
+    async def _write_srt_file(self, segments: Sequence[Tuple[float, float, str]], output_file: str):
+        """Write the subtitle segments to an SRT file."""
         total_segments = len(segments)
         self.progress_manager.start_task(f"Writing {total_segments} subtitle segments", total=total_segments)
-        async with aiofiles.open(output_file, "w") as f:
-            for i, (start_time, end_time, text) in enumerate(segments, 1):
-                await f.write(f"{i}\n")
-                await f.write(f"{self._format_time(start_time)} --> {self._format_time(end_time)}\n")
-                await f.write(f"{text}\n\n")
-                self.progress_manager.update_progress(1)
-        self.progress_manager.complete_task("Subtitle file written")
+        try:
+            async with aiofiles.open(output_file, "w") as f:
+                for i, (start_time, end_time, text) in enumerate(segments, 1):
+                    await f.write(f"{i}\n")
+                    await f.write(f"{self._format_time(start_time)} --> {self._format_time(end_time)}\n")
+                    await f.write(f"{text}\n\n")
+                    self.progress_manager.update_progress(1)
+        except IOError as e:
+            logger.error(f"Error writing SRT file: {str(e)}")
+            raise
+        finally:
+            self.progress_manager.complete_task("Subtitle file written")
 
-    def _format_time(self, seconds: float) -> str:
+    @staticmethod
+    def _format_time(seconds: float) -> str:
+        """Format time in seconds to SRT time format."""
         hours = int(seconds // 3600)
         minutes = int((seconds % 3600) // 60)
         seconds = seconds % 60
