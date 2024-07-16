@@ -4,10 +4,11 @@ import aiofiles
 from .progress_manager import ProgressManager
 import os
 
+
 class SubtitleGenerator:
     MAX_SEGMENT_DURATION = 5.0  # Maximum duration for a single subtitle
     MAX_PAUSE_DURATION = 2.0  # Maximum duration of a pause before creating a new subtitle
-    END_SENTENCE_PUNCTUATION = '.!?'  # Punctuation that typically ends a sentence
+    END_SENTENCE_PUNCTUATION = ".!?"  # Punctuation that typically ends a sentence
 
     def __init__(self, progress_manager: ProgressManager):
         self.progress_manager = progress_manager
@@ -45,7 +46,9 @@ class SubtitleGenerator:
         base_name = os.path.splitext(output_file)[0]
         return f"{base_name}.srt"
 
-    def _group_words_into_segments(self, word_timestamps: Sequence[Tuple[float, float, str]]) -> List[Tuple[float, float, str]]:
+    def _group_words_into_segments(
+        self, word_timestamps: Sequence[Tuple[float, float, str]]
+    ) -> List[Tuple[float, float, str]]:
         """Group words into subtitle segments based on timing constraints and sentence structure."""
         segments = []
         current_segment = []
@@ -65,13 +68,15 @@ class SubtitleGenerator:
                     # Split the segment
                     first_part = current_segment[:split_index]
                     second_part = current_segment[split_index:]
-                    
+
                     # Add the first part as a segment
-                    segments.append((current_start_time, word_timestamps[i-len(second_part)][1], " ".join(first_part)))
-                    
+                    segments.append(
+                        (current_start_time, word_timestamps[i - len(second_part)][1], " ".join(first_part))
+                    )
+
                     # Start a new segment with the second part
                     current_segment = second_part
-                    current_start_time = word_timestamps[i-len(second_part)+1][0]
+                    current_start_time = word_timestamps[i - len(second_part) + 1][0]
                 else:
                     # If no good split point, just add the current segment
                     segments.append((current_start_time, end, " ".join(current_segment)))
@@ -92,12 +97,12 @@ class SubtitleGenerator:
         for i in range(len(words) - 1, -1, -1):
             if words[i][-1] in self.END_SENTENCE_PUNCTUATION:
                 return i + 1  # Split after the punctuation
-        
+
         # If no sentence boundary found, try to split at a natural pause (e.g., comma)
         for i in range(len(words) - 1, -1, -1):
-            if words[i].endswith(','):
+            if words[i].endswith(","):
                 return i + 1  # Split after the comma
-        
+
         # If no good split point found, split in the middle
         return len(words) // 2
 
