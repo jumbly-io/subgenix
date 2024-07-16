@@ -18,7 +18,7 @@ class SubtitleGenerator:
 
         Args:
             word_timestamps: A sequence of tuples containing (start_time, end_time, word).
-            output_file: The path to the output file.
+            output_file: The path to the output file (can be with or without extension).
 
         Returns:
             The path to the generated SRT file.
@@ -40,9 +40,21 @@ class SubtitleGenerator:
             raise
 
     def _get_srt_filename(self, output_file: str) -> str:
-        """Convert the output filename to an SRT filename."""
-        base_name = os.path.splitext(output_file)[0]
-        return f"{base_name}.srt"
+        """
+        Convert the output filename to an SRT filename.
+        
+        This method ensures that the returned filename always has a .srt extension,
+        regardless of whether the input filename had an extension or not.
+        """
+        # Split the path and filename
+        directory, filename = os.path.split(output_file)
+        
+        # Remove any existing extension and add .srt
+        base_name = os.path.splitext(filename)[0]
+        srt_filename = f"{base_name}.srt"
+        
+        # Join the directory back with the new filename
+        return os.path.join(directory, srt_filename)
 
     def _group_words_into_segments(self, word_timestamps: Sequence[Tuple[float, float, str]]) -> List[Tuple[float, float, str]]:
         """Group words into subtitle segments based on timing constraints."""
