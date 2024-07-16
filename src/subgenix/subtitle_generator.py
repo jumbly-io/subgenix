@@ -4,7 +4,6 @@ import aiofiles
 from .progress_manager import ProgressManager
 import os
 
-
 class SubtitleGenerator:
     def __init__(self, progress_manager: ProgressManager):
         self.progress_manager = progress_manager
@@ -29,25 +28,25 @@ class SubtitleGenerator:
         return f"{base_name}.srt"
 
     def _group_words_into_segments(self, word_timestamps: List[Tuple[float, float, str]]) -> List[Tuple[float, float, str]]:
-    segments = []
-    current_segment = []
-    current_start_time = word_timestamps[0][0]
-    max_segment_duration = 5.0  # Maximum duration for a single subtitle
-    max_pause_duration = 2.0  # Maximum duration of a pause before creating a new subtitle
+        segments = []
+        current_segment = []
+        current_start_time = word_timestamps[0][0]
+        max_segment_duration = 5.0  # Maximum duration for a single subtitle
+        max_pause_duration = 2.0  # Maximum duration of a pause before creating a new subtitle
 
-    for i in range(1, len(word_timestamps)):
-        start, end, word = word_timestamps[i]
-        current_segment.append(word)
-        if end - current_start_time >= max_segment_duration or end - word_timestamps[i - 1][1] >= max_pause_duration:
-            segments.append((current_start_time, word_timestamps[i-1][1], " ".join(current_segment)))
-            current_segment = []
-            current_start_time = end
+        for i in range(1, len(word_timestamps)):
+            start, end, word = word_timestamps[i]
+            current_segment.append(word)
+            if end - current_start_time >= max_segment_duration or end - word_timestamps[i - 1][1] >= max_pause_duration:
+                segments.append((current_start_time, word_timestamps[i-1][1], " ".join(current_segment)))
+                current_segment = []
+                current_start_time = end
 
-    # Add the last segment
-    if current_segment:
-        segments.append((current_start_time, word_timestamps[-1][1], " ".join(current_segment)))
+        # Add the last segment
+        if current_segment:
+            segments.append((current_start_time, word_timestamps[-1][1], " ".join(current_segment)))
 
-    return segments
+        return segments
 
     async def _write_srt_file(self, segments: List[Tuple[float, float, str]], output_file: str):
         total_segments = len(segments)
@@ -61,7 +60,4 @@ class SubtitleGenerator:
         self.progress_manager.complete_task("Subtitle file written")
 
     def _format_time(self, seconds: float) -> str:
-        hours = int(seconds // 3600)
-        minutes = int((seconds % 3600) // 60)
-        seconds = seconds % 60
-        return f"{hours:02d}:{minutes:02d}:{seconds:06.3f}".replace(".", ",")
+        hours = int(seconds
