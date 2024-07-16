@@ -22,22 +22,34 @@ class SubtitleGenerator:
             self.progress_manager.fail_task("Subtitle generation failed")
             raise
 
-    def _group_words_into_segments(
-        self, word_timestamps: List[Tuple[float, float, str]]
-    ) -> List[Tuple[float, float, str]]:
+
+    def _group_words_into_segments(self, word_timestamps):
         segments = []
         current_segment = []
         current_start_time = word_timestamps[0][0]
-        max_segment_duration = 5.0  # Maximum duration for a single subtitle
+
         for start, end, word in word_timestamps:
             current_segment.append(word)
-            if end - current_start_time >= max_segment_duration or len(current_segment) >= 10:
-                segments.append((current_start_time, end, " ".join(current_segment)))
+            if word.endswith('.') or word.endswith('?') or word.endswith('!'):
+                segment_text = ' '.join(current_segment)
+                segments.append((current_start_time, end, segment_text))
                 current_segment = []
                 current_start_time = end
-        # Add any remaining words
+
+    # Add any remaining words as the final segment
         if current_segment:
-            segments.append((current_start_time, word_timestamps[-1][1], " ".join(current_segment)))
+            segment_text = ' '.join(current_segment)
+            segments.append((current_start_time, word_timestamps[-1][1], segment_text))
+            max_segment_duration = 5.0  # Maximum duration for a single subtitle
+            min_gap_duration = 0.5  # Minimum gap duration to extend the previous subtitle
+        for i in range(len(segments) - 1):
+            start_time, end_time, text = segments[i]
+            next_start_time, _, _ = segments[i + 1]
+
+            if next_start_time - end_time < min_gap_duration:
+                new_end_time = min(end_time + max_segment_duration, next_start_time)
+                segments[i] = (start_time, new_end_time, text)
+
         return segments
 
     async def _write_srt_file(self, segments: List[Tuple[float, float, str]], output_file: str):
