@@ -1,18 +1,20 @@
-from typing import List, Tuple
+from typing import List, Tuple, Sequence
 from loguru import logger
 import aiofiles
 from .progress_manager import ProgressManager
-
+import os
 
 class SubtitleGenerator:
     max_segment_duration = 5.0  # Maximum duration for a single subtitle
     max_pause_duration = 2.0  # Maximum duration of a pause before creating a new sub
+title
+    end_sentence_punctuation = '.!?'  # Punctuation that typically ends a sentence
 
     def __init__(self, progress_manager: ProgressManager):
         self.progress_manager = progress_manager
         logger.info("SubtitleGenerator initialized")
 
-    async def generate_subtitles(self, word_timestamps: List[Tuple[float, float, str]], output_file: str) -> str:
+    async def generate_subtitles(self, word_timestamps: Sequence[Tuple[float, float, str]], output_file: str) -> str:
         self.progress_manager.start_task("Generating subtitles")
         logger.info(f"Generating subtitles for output file: {output_file}")
         try:
@@ -25,31 +27,6 @@ class SubtitleGenerator:
             self.progress_manager.fail_task("Subtitle generation failed")
             raise
 
-
-#    def _group_words_into_segments(self, word_timestamps):
-#        segments = []
-#        current_segment = []
-#        current_start_time = word_timestamps[0][0]
-#
-#        for start, end, word in word_timestamps:
-#            current_segment.append(word)
-#            if word.endswith('.') or word.endswith('?') or word.endswith('!'):
-#                segment_text = ' '.join(current_segment)
-#                segments.append((current_start_time, end, segment_text))
-#                current_segment = []
-#                current_start_time = end
-
-    # Add any remaining words as the final segment
-#        if current_segment:
-#            segment_text = ' '.join(current_segment)
-#            segments.append((current_start_time, word_timestamps[-1][1], segment_text))
-#        for i in range(len(segments) - 1):
-#            start_time, end_time, text = segments[i]
-#            next_start_time, _, _ = segments[i + 1]
-#
-#            if next_start_time - end_time < min_gap_duration:
-#                new_end_time = min(end_time + max_segment_duration, next_start_time)
-#                segments[i] = (start_time, new_end_time, text)
     def _group_words_into_segments(self, word_timestamps: Sequence[Tuple[float, float, str]]) -> List[Tuple[float, float, str]]:
             """Group words into subtitle segments based on timing constraints and sentence structure."""
             segments = []
