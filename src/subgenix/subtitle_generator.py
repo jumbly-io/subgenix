@@ -7,6 +7,7 @@ import os
 class SubtitleGenerator:
     MAX_SEGMENT_DURATION = 5.0  # Maximum duration for a single subtitle
     MAX_PAUSE_DURATION = 2.0  # Maximum duration of a pause before creating a new subtitle
+    END_SENTENCE_PUNCTUATION = '.!?'  # Punctuation that typically ends a sentence
 
     def __init__(self, progress_manager: ProgressManager):
         self.progress_manager = progress_manager
@@ -57,26 +58,60 @@ class SubtitleGenerator:
         return os.path.join(directory, srt_filename)
 
     def _group_words_into_segments(self, word_timestamps: Sequence[Tuple[float, float, str]]) -> List[Tuple[float, float, str]]:
-        """Group words into subtitle segments based on timing constraints."""
+        """Group words into subtitle segments based on timing constraints and sentence structure."""
         segments = []
         current_segment = []
         current_start_time = word_timestamps[0][0]
+        last_end_time = word_timestamps[0][1]
 
-        for i, (start, end, word) in enumerate(word_timestamps[1:], 1):
+        for i, (start, end, word) in enumerate(word_timestamps):
             current_segment.append(word)
             segment_duration = end - current_start_time
-            pause_duration = start - word_timestamps[i-1][1]
+            pause_duration = start - last_end_time
 
+            # Check if we need to start a new segment
             if segment_duration >= self.MAX_SEGMENT_DURATION or pause_duration >= self.MAX_PAUSE_DURATION:
-                segments.append((current_start_time, word_timestamps[i-1][1], " ".join(current_segment)))
-                current_segment = []
-                current_start_time = start
+                # Try to find a better split point
+                split_index = self._find_split_index(current_segment)
+                if split_index > 0:
+                    # Split the segment
+                    first_part = current_segment[:split_index]
+                    second_part = current_segment[split_index:]
+                    
+                    # Add the first part as a segment
+                    segments.append((current_start_time, word_timestamps[i-len(second_part)][1], " ".join(first_part)))
+                    
+                    # Start a new segment with the second part
+                    current_segment = second_part
+                    current_start_time = word_timestamps[i-len(second_part)+1][0]
+                else:
+                    # If no good split point, just add the current segment
+                    segments.append((current_start_time, end, " ".join(current_segment)))
+                    current_segment = []
+                    current_start_time = end
+
+            last_end_time = end
 
         # Add the last segment
         if current_segment:
             segments.append((current_start_time, word_timestamps[-1][1], " ".join(current_segment)))
 
         return segments
+
+    def _find_split_index(self, words: List[str]) -> int:
+        """Find the best index to split a list of words, preferring sentence boundaries."""
+        # First, try to find the last sentence-ending punctuation
+        for i in range(len(words) - 1, -1, -1):
+            if words[i][-1] in self.END_SENTENCE_PUNCTUATION:
+                return i + 1  # Split after the punctuation
+        
+        # If no sentence boundary found, try to split at a natural pause (e.g., comma)
+        for i in range(len(words) - 1, -1, -1):
+            if words[i].endswith(','):
+                return i + 1  # Split after the comma
+        
+        # If no good split point found, split in the middle
+        return len(words) // 2
 
     async def _write_srt_file(self, segments: Sequence[Tuple[float, float, str]], output_file: str):
         """Write the subtitle segments to an SRT file."""
