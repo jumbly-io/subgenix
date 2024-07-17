@@ -1,4 +1,4 @@
-from typing import List, Sequence
+from typing import List, Tuple, Sequence
 from loguru import logger
 import aiofiles
 from .progress_manager import ProgressManager
@@ -56,13 +56,19 @@ class SubtitleGenerator:
                     second_part = current_segment[split_index:]
 
                     # Add the first part as a segment
-                    segments.append(
-                        (current_start_time, word_timestamps[i - len(second_part)][1], " ".join(first_part))
-                    )
+                    if i - len(second_part) >= 0:
+                        segments.append(
+                            (current_start_time, word_timestamps[i - len(second_part)][1], " ".join(first_part))
+                        )
+                    else:
+                        segments.append((current_start_time, last_end_time, " ".join(first_part)))
 
                     # Start a new segment with the second part
                     current_segment = second_part
-                    current_start_time = word_timestamps[i - len(second_part) + 1][0]
+                    if i - len(second_part) + 1 < len(word_timestamps):
+                        current_start_time = word_timestamps[i - len(second_part) + 1][0]
+                    else:
+                        current_start_time = last_end_time
                 else:
                     # If no good split point, just add the current segment
                     segments.append((current_start_time, end, " ".join(current_segment)))
