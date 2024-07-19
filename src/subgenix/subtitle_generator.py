@@ -2,6 +2,7 @@ from typing import List, Tuple, Sequence
 from loguru import logger
 import aiofiles
 from .progress_manager import ProgressManager
+import os
 
 
 class SubtitleGenerator:
@@ -19,6 +20,11 @@ class SubtitleGenerator:
         if not output_file:
             raise ValueError("output_file cannot be empty")
         self.progress_manager.start_task("Generating subtitles")
+
+        # Modify the output file name
+        base_name = os.path.splitext(output_file)[0]
+        output_file = f"{base_name}.srt"
+
         logger.info(f"Generating subtitles for output file: {output_file}")
         try:
             subtitle_segments = self._group_words_into_segments(word_timestamps)
