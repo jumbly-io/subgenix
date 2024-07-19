@@ -22,7 +22,7 @@ class SubtitleGenerator:
         self.progress_manager.start_task("Generating subtitles")
 
         # Modify the output file name
-        base_name = os.path.splitext(output_file)[0]
+        base_name = os.path.splitext(os.path.splitext(output_file)[0])[0]
         output_file = f"{base_name}.srt"
 
         logger.info(f"Generating subtitles for output file: {output_file}")
