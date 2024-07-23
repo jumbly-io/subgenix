@@ -12,7 +12,7 @@ cd subgenix
 
 2. Build and start the Docker containers:
 ```bash
-make rebuild
+make build
 ```
 
 ## Development
